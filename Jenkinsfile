@@ -43,5 +43,39 @@ pipeline {
          }
         }
       }
+      stage('login k8s'){
+        steps{
+            sh"aws eks --region us-east-1 update-kubeconfig --name EKS_CLUSTER"
+        }
+    }
+    stage('deployment') {
+     steps{  
+         script {
+            sh"aws --region us-east-1 eks get-token --cluster-name cluster-2"
+            sh"kubectl apply -f eks_cicd/deployment.yaml"
+            sh"kubectl rollout restart -f  eks_cicd/deployment.yaml "
+            
+              
+         }
+      }
+    }
+       stage('service') {
+     steps{  
+         script {
+            
+            sh"kubectl apply -f eks_cicd/service.yaml"
+              
+         }
+      }
+    }
+       stage('ingress') {
+     steps{  
+         script {
+            
+            sh"kubectl apply -f  eks_cicd/ingress.yaml  -o yaml"
+              
+         }
+      }
+    }
     }
 }
